@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Eagle Eye App</title>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload' %>
+    <%= javascript_include_tag 'application', 'data-turbolinks-track': 'reload' %>
+    <%= favicon_link_tag() %>
+
+    <style type="text/css">
+    .bs-component + .bs-component {
+      margin-top: 1rem;
+    }
+    @media (min-width: 768px) {
+      .bs-docs-section {
+        margin-top: 8em;
+      }
+      .bs-component {
+        position: relative;
+      }
+      .bs-component .modal {
+        position: relative;
+        top: auto;
+        right: auto;
+        bottom: auto;
+        left: auto;
+        z-index: 1;
+        display: block;
+      }
+      .bs-component .modal-dialog {
+        width: 90%;
+      }
+      .bs-component .popover {
+        position: relative;
+        display: inline-block;
+        width: 220px;
+        margin: 20px;
+      }
+      .nav-tabs {
+        margin-bottom: 15px;
+      }
+      .progress {
+        margin-bottom: 10px;
+      }
+
+      table {
+        font-size: 11pt;
+        width: 100%;
+        display: block;
+        white-space: nowrap;
+      }
+
+      th {
+        text-align:center;
+      }
+
+      td {
+        text-align:center;
+      }
+
+      .td_vertical_align_middle.td_vertical_align_middle {
+        vertical-align: middle;
+      }
+
+      table.table-headerfixed {
+      /*    width: 100%;*/
+        table-layout: fixed;
+      }
+
+      table.table-headerfixed thead,
+      table.table-headerfixed tbody,
+      table.table-headerfixed tr,
+      table.table-headerfixed td,
+      table.table-headerfixed th {
+          display: block;
+      }
+
+      table.table-headerfixed tr:after {
+          content: ' ';
+          display: block;
+          visibility: hidden;
+          clear: both;
+      }
+
+      table.table-headerfixed tbody {
+          height: 400px;
+          overflow-y: scroll;
+      }
+
+      table.table-headerfixed thead {
+          /* fallback */
+          width: 97%;
+          /* minus scroll bar width */
+          width: calc(100% - 18px);
+      }
+
+      table.table-headerfixed tbody td,
+      table.table-headerfixed thead th {
+          float: left;
+          height: 3em;
+          display: table-cell;
+          text-align: center;
+          padding: 10px;
+          font-size: 14px;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          white-space: nowrap;
+      }
+
+      table.table-headerfixed tbody td {
+          height: 3em;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          font-size: 14px;
+      }
+
+    }
+    </style>
+  </head>
+
+  <body>
+    <% if @login_user != nil then %>
+    <header class="sticky-top">
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+
+          <div class="collapse navbar-collapse" id="navbar">
+            <ul class="navbar-nav mr-auto">
+              <li class="nav-item">
+                <%= link_to "ホーム", "/products/show", class:'nav-link', data: { no_turbolink: true } %>
+              </li>
+
+              <li class="nav-item dropdown active">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  各種設定
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                  <a class="dropdown-item" href="/accounts/setup">出品除外設定</a>
+                </div>
+              </li>
+              <li class="nav-item">
+                <a href="/users/sign_out" class="nav-link">ログアウト</a>
+              </li>
+              <% if @login_user != nil then %>
+              <% if @login_user.admin_flg == true then %>
+              <li class="nav-item">
+                <a href="/admin" class="nav-link">管理者</a>
+              </li>
+              <% end %>
+              <% end %>
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </header>
+    <% end %>
+    <%= yield %>
+    <script type="text/javascript">
+      $('.bs-component [data-toggle="popover"]').popover();
+      $('.bs-component [data-toggle="tooltip"]').tooltip();
+    </script>
+  </body>
+</html>

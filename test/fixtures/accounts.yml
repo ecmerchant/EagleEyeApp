@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: MyString
+  rakuten_app_id: MyString
+  yahoo_app_id: MyString
+  progress: MyString
+
+two:
+  user: MyString
+  rakuten_app_id: MyString
+  yahoo_app_id: MyString
+  progress: MyString
