@@ -1,14 +1,102 @@
 class Product < ApplicationRecord
+  belongs_to :list, primary_key: 'product_id', foreign_key: 'product_id', optional: true
+
   require 'open-uri'
+  require 'rakuten_web_service'
 
   def self.rakuten_search(user, condition)
+    account = Account.find_by(user: user)
+    if account != nil then
+      if account.rakuten_app_id != nil then
+        app_id = account.rakuten_app_id
+      else
+        app_id = ENV['RAKUTEN_APP_ID']
+      end
+    end
 
+    RakutenWebService.configure do |c|
+      c.application_id = ENV['RAKUTEN_APP_ID']
+    end
+
+    search_condition = Hash.new
+    search_condition = {
+      keyword: condition[:keyword],
+      shopCode: condition[:store_id],
+      genreId: condition[:category_id]
+    }
+
+    results = RakutenWebService::Ichiba::Item.search(search_condition)
+
+    item_num = results.count
+
+    if item_num > 0 then
+      #検索結果からアイテム取り出し
+      res = Hash.new
+      counter = 0
+      while results.has_next_page?
+        checker = Hash.new
+        product_list = Array.new
+        listing = Array.new
+
+        results.each do |result|
+          url = result['itemUrl']
+          product_id = result['itemCode'].gsub(':','_')
+          image1 = result['mediumImageUrls'][0]
+          image2 = result['mediumImageUrls'][1]
+          image3 = result['mediumImageUrls'][2]
+          name = result['itemName']
+          price = result['itemPrice']
+
+          category_id = result['genreId']
+          description = result['itemCaption']
+          mpn = nil
+
+          condition = "New"
+          if name.include?('中古') || description.include?('中古') then
+            condition = "Used"
+          end
+          res = Hash.new
+          res = {
+            shop_id: "1",
+            product_id: product_id,
+            title: name,
+            price: price,
+            image1: image1,
+            image2: image2,
+            image3: image3,
+            part_number: mpn,
+            description: description,
+            category_id: category_id,
+            brand: nil
+          }
+
+          if checker.key?(product_id) == false then
+            product_list << Product.new(res)
+            listing << List.new(user: user, product_id: product_id, shop_id:  "1", status: "searching", condition: "New")
+            checker[product_id] = name
+          end
+        end
+        sleep(0.5)
+
+        if res != nil then
+          cols = res.keys
+          cols.delete_at(0)
+          cols.delete_at(0)
+          Product.import product_list, on_duplicate_key_update: {constraint_name: :for_upsert_products, columns: cols}
+          List.import listing, on_duplicate_key_update: {constraint_name: :for_upsert_lists, columns: [:status, :condition]}
+        end
+        counter += 1
+        if counter > 9 then
+          break
+        end
+        results = results.next_page
+      end
+    end
 
   end
 
 
   def self.yahoo_search(user, condition)
-    logger.debug("-------------------------------------------")
     account = Account.find_by(user: user)
     if account != nil then
       if account.yahoo_app_id != nil then
@@ -57,6 +145,7 @@ class Product < ApplicationRecord
 
       product_list = Array.new
       category_list = Array.new
+      listing = Array.new
       chash = Hash.new
 
       data = nil
@@ -99,6 +188,7 @@ class Product < ApplicationRecord
           price: price
         }
         product_list << Product.new(data)
+        listing << List.new(user: user, product_id: product_id, shop_id:  "2", status: "searching", condition: "New")
         if chash.has_key?(category_id) == false then
           category_list << Category.new(category_id: category_id, name: category_name, shop_id: "2")
           chash[category_id] = category_name
@@ -110,6 +200,7 @@ class Product < ApplicationRecord
         cols.delete_at(0)
         cols.delete_at(0)
         Product.import product_list, on_duplicate_key_update: {constraint_name: :for_upsert_products, columns: cols}
+        List.import listing, on_duplicate_key_update: {constraint_name: :for_upsert_lists, columns: [:status, :condition]}
         Category.import category_list, on_duplicate_key_update: {constraint_name: :for_upsert_categories, columns: [:name]}
       end
     end

@@ -4,7 +4,9 @@ class ProductsController < ApplicationController
     user = current_user.email
     @login_user = current_user
     @account = Account.find_or_create_by(user: user)
-    @lists = nil
+    @shop_id = @account.selected_shop_id
+    @lists = List.where(user: user, shop_id: @shop_id, status: "searching").page(params[:page]).per(100)
+    @headers = Constants::HD
   end
 
   def search
@@ -19,6 +21,11 @@ class ProductsController < ApplicationController
         store_id: store_id,
         category_id: category_id
       }
+      @account = Account.find_or_create_by(user: user)
+      @account.update(
+        selected_shop_id: shop_id,
+        search_start: Time.now
+      )
       if keyword != nil || store_id != nil || category_id != nil then
         if shop_id == "1" then
           #楽天市場

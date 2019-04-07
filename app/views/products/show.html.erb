@@ -7,7 +7,7 @@
           <%= form_tag('/products/search', method:'post', id:'products_search') do %>
             <div class="form-group">
               <label style='margin-right:10px;'><b>取得元</b>
-                <%= select_tag 'shop_id', options_for_select({"楽天市場" => "1", "ヤフショ" => "2"}, "1"), class:'form-control', style:'margin-left:10px;margin-right:20px;', id:'select_shop' %>
+                <%= select_tag 'shop_id', options_for_select({"楽天市場" => "1", "ヤフショ" => "2"}, @shop_id), class:'form-control', style:'margin-left:10px;margin-right:20px;', id:'select_shop' %>
               </label>
 
               <div class="form-inline" style="margin-top:10px;">
@@ -28,22 +28,47 @@
           <% end %>
         </div>
         <br>
-        <h5 style="display:inline;">取得状況： <%= @account.progress %></h5><br><br>
-
-        <table class="table table-striped table-hover table-bordered table-headerfixed ellipsis" id="list_table" style="width:100%;">
+        <h5 style="display:inline;">取得状況： <%= @account.progress %></h5><br>
+        <%= paginate @lists %>
+        <div style="height:400px; width: 100%; overflow-y:scroll;">
+        <table class="table table-striped table-hover table-bordered ellipsis" id="list_table">
           <thead class="thead-light">
             <tr>
-              <th></th>
+              <% @headers.each do |key, value| %>
+              <th><%= value %></th>
+              <% end %>
             </tr>
           </thead>
           <tbody>
             <% if @lists != nil then %>
+            <% @lists.each do |list| %>
             <tr>
-              <td></td>
+              <% @headers.each do |key, value| %>
+                <% if list.product != nil then %>
+                  <% case key %>
+                  <% when :title then %>
+                    <td class="align-middle"><%= list.product[key].truncate(40) %></td>
+                  <% when :description then %>
+                    <td class="align-middle"><%= list.product[key].truncate(50) %></td>
+                  <% when :image1, :image2, :image3 then %>
+                    <% if list.product[key] != nil then %>
+                      <td class="align-middle"><%= image_tag(list.product[key]) %></td>
+                    <% else %>
+                      <td class="align-middle"></td>
+                    <% end %>
+                  <% else %>
+                    <td class="align-middle"><%= list.product[key] %></td>
+                  <% end %>
+                <% else %>
+                  <td class="align-middle"><%= list[key] %></td>
+                <% end %>
+              <% end %>
             </tr>
+            <% end %>
             <% end %>
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   </div>
