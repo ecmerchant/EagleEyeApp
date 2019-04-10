@@ -1,6 +1,6 @@
 class Product < ApplicationRecord
   belongs_to :list, primary_key: 'product_id', foreign_key: 'product_id', optional: true
-
+  
   require 'open-uri'
   require 'rakuten_web_service'
 
@@ -28,7 +28,7 @@ class Product < ApplicationRecord
     results = RakutenWebService::Ichiba::Item.search(search_condition)
 
     item_num = results.count
-
+    num = 0
     if item_num > 0 then
       #検索結果からアイテム取り出し
       res = Hash.new
@@ -71,6 +71,7 @@ class Product < ApplicationRecord
           }
 
           if checker.key?(product_id) == false then
+            num += 1
             product_list << Product.new(res)
             listing << List.new(user: user, product_id: product_id, shop_id:  "1", status: "searching", condition: "New")
             checker[product_id] = name
@@ -84,15 +85,20 @@ class Product < ApplicationRecord
           cols.delete_at(0)
           Product.import product_list, on_duplicate_key_update: {constraint_name: :for_upsert_products, columns: cols}
           List.import listing, on_duplicate_key_update: {constraint_name: :for_upsert_lists, columns: [:status, :condition]}
+          account.update(
+            progress: "取得中 " + num.to_s + "件取得済み"
+          )
         end
         counter += 1
-        if counter > 9 then
+        if counter > 29 then
           break
         end
         results = results.next_page
       end
     end
-
+    account.update(
+      progress: "取得完了 " + num.to_s + "件取得済み"
+    )
   end
 
 
@@ -109,7 +115,7 @@ class Product < ApplicationRecord
     query = condition[:keyword]
     category_id = condition[:category_id]
     store_id = condition[:store_id]
-
+    dnum = 0
     (0..19).each do |num|
       offset = 50 * num
 
@@ -188,6 +194,7 @@ class Product < ApplicationRecord
           price: price
         }
         product_list << Product.new(data)
+        dnum += 1
         listing << List.new(user: user, product_id: product_id, shop_id:  "2", status: "searching", condition: "New")
         if chash.has_key?(category_id) == false then
           category_list << Category.new(category_id: category_id, name: category_name, shop_id: "2")
@@ -199,11 +206,17 @@ class Product < ApplicationRecord
         cols = data.keys
         cols.delete_at(0)
         cols.delete_at(0)
+        account.update(
+          progress: "取得中 " + dnum.to_s + "件取得済み"
+        )
         Product.import product_list, on_duplicate_key_update: {constraint_name: :for_upsert_products, columns: cols}
         List.import listing, on_duplicate_key_update: {constraint_name: :for_upsert_lists, columns: [:status, :condition]}
         Category.import category_list, on_duplicate_key_update: {constraint_name: :for_upsert_categories, columns: [:name]}
       end
     end
+    account.update(
+      progress: "取得完了 " + dnum.to_s + "件取得済み"
+    )
   end
 
 end

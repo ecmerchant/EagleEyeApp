@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_04_06_170543) do
+ActiveRecord::Schema.define(version: 2019_04_10_134154) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -36,6 +36,16 @@ ActiveRecord::Schema.define(version: 2019_04_06_170543) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["category_id", "shop_id"], name: "for_upsert_categories", unique: true
+  end
+
+  create_table "list_templates", force: :cascade do |t|
+    t.string "user"
+    t.string "shop_id"
+    t.string "list_type"
+    t.string "header"
+    t.text "value"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "lists", force: :cascade do |t|
@@ -65,6 +75,13 @@ ActiveRecord::Schema.define(version: 2019_04_06_170543) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["product_id", "shop_id"], name: "for_upsert_products", unique: true
+  end
+
+  create_table "shops", force: :cascade do |t|
+    t.string "shop_id"
+    t.string "name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "users", force: :cascade do |t|

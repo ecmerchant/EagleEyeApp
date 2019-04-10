@@ -46,13 +46,15 @@
               <% @headers.each do |key, value| %>
                 <% if list.product != nil then %>
                   <% case key %>
+                  <% when :shop_id then %>
+                    <td class="align-middle"><%= list.shop.name %></td>
                   <% when :title then %>
                     <td class="align-middle"><%= list.product[key].truncate(40) %></td>
                   <% when :description then %>
                     <td class="align-middle"><%= list.product[key].truncate(50) %></td>
                   <% when :image1, :image2, :image3 then %>
                     <% if list.product[key] != nil then %>
-                      <td class="align-middle"><%= image_tag(list.product[key]) %></td>
+                      <td class="align-middle"><%= image_tag(list.product[key], :size => "60x60") %></td>
                     <% else %>
                       <td class="align-middle"></td>
                     <% end %>

@@ -7,6 +7,7 @@ class ProductsController < ApplicationController
     @shop_id = @account.selected_shop_id
     @lists = List.where(user: user, shop_id: @shop_id, status: "searching").page(params[:page]).per(100)
     @headers = Constants::HD
+
   end
 
   def search
@@ -22,21 +23,42 @@ class ProductsController < ApplicationController
         category_id: category_id
       }
       @account = Account.find_or_create_by(user: user)
-      @account.update(
-        selected_shop_id: shop_id,
-        search_start: Time.now
-      )
+
       if keyword != nil || store_id != nil || category_id != nil then
-        if shop_id == "1" then
-          #楽天市場
-          Product.rakuten_search(user, condition)
-        elsif shop_id == "2" then
-          #ヤフーショッピング
-          Product.yahoo_search(user, condition)
-        end
+        @account.update(
+          selected_shop_id: shop_id,
+          search_start: Time.now,
+          progress: "処理受付"
+        )
+        ProductSearchJob.perform_later(user, condition, shop_id)
       end
     end
     redirect_to products_show_path
+  end
+
+
+  def setup
+    @login_user = current_user
+    user = current_user.email
+    @account = Account.find_or_create_by(user: user)
+    @headers = Array.new
+    @template = ListTemplate.where(user: user, shop_id: "3", list_type: '新規')
+
+    File.open('app/others/amazon_new_listing_template.txt', 'r', encoding: 'Windows-31J', undef: :replace, replace: '*') do |file|
+      csv = CSV.new(file, encoding: 'Windows-31J', col_sep: "\t")
+      csv.each do |row|
+        @headers.push(row)
+      end
+    end
+    if request.post? then
+      data = params[:text]
+      data.each do |key, value|
+        tp = ListTemplate.find_or_create_by(user: user, shop_id: "3", list_type: '新規', header: key)
+        tp.update(
+          value: value
+        )
+      end
+    end
   end
 
 end

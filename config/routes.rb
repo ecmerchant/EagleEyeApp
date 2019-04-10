@@ -1,10 +1,19 @@
 require 'resque/server'
 Rails.application.routes.draw do
 
+  get 'lists/show'
+  get 'lists/check'
+  post 'lists/check'
+  get 'lists/regist'
 
   get 'accounts/setup'
+
   get 'products/show'
   post 'products/search'
+  get 'products/setup'
+  post 'products/setup'
+  get 'products/listup'
+  post 'products/listup'
 
   root to: 'products#show'
 
