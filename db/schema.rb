@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_04_10_134154) do
+ActiveRecord::Schema.define(version: 2019_04_10_163507) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -27,6 +27,7 @@ ActiveRecord::Schema.define(version: 2019_04_10_134154) do
     t.text "last_keyword"
     t.string "last_category_id"
     t.string "last_store_id"
+    t.string "selected_group"
   end
 
   create_table "categories", force: :cascade do |t|
