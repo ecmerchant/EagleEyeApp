@@ -28,7 +28,7 @@
         <br>
         <%= link_to '出品候補の確認', '/lists/show', class: 'btn btn-success' %>
         <%= link_to '出品済み商品の確認', '/lists/check', class: 'btn btn-primary', style: 'margin-left:20px;' %>
-        <%= link_to 'リサーチ済み商品の確認', '/lists/check', class: 'btn btn-warning', style: 'margin-left:20px;' %>
+        <%= link_to 'リサーチ済み商品の確認', '/products/check', class: 'btn btn-warning', style: 'margin-left:20px;' %>
         <br><br>
         <h5 style="display:inline;">取得状況： <%= @account.progress %></h5><br>
         <%= paginate @lists %>

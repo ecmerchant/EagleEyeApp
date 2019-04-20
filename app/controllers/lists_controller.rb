@@ -15,6 +15,15 @@ class ListsController < ApplicationController
         @headers.push(row)
       end
     end
+
+    @headers2 = Array.new
+    File.open('app/others/yahoo_listing_template.txt', 'r', encoding: 'Windows-31J', undef: :replace, replace: '*') do |file|
+      csv = CSV.new(file, encoding: 'Windows-31J', col_sep: "\t")
+      csv.each do |row|
+        @headers2.push(row)
+      end
+    end
+
     @lists = List.where(user: user, status: 'searching').limit(5)
 
     @body = Array.new

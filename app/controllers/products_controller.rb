@@ -103,4 +103,15 @@ class ProductsController < ApplicationController
     redirect_to root_url
   end
 
+  def check
+
+    user = current_user.email
+    @login_user = current_user
+    @account = Account.find_or_create_by(user: user)
+    @shop_id = @account.selected_shop_id
+    @lists = List.where(user: user, shop_id: @shop_id, status: "reject").page(params[:page]).per(100)
+    @headers = Constants::HD
+
+  end
+
 end

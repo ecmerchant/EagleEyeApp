@@ -8,6 +8,7 @@ Rails.application.routes.draw do
 
   get 'accounts/setup'
 
+  get 'products/check'
   get 'products/show'
   post 'products/search'
   get 'products/setup'
