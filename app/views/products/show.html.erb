@@ -9,7 +9,6 @@
               <label style='margin-right:10px;'><b>取得元</b>
                 <%= select_tag 'shop_id', options_for_select({"楽天市場" => "1", "ヤフショ" => "2"}, @shop_id), class:'form-control', style:'margin-left:10px;margin-right:20px;', id:'select_shop' %>
               </label>
-
               <div class="form-inline" style="margin-top:10px;">
                 <label style='margin-right:10px;'><b>検索条件</b></label>
                 <label>キーワード
@@ -23,11 +22,14 @@
                 </label>
                 <%= submit_tag '取得開始', class: 'btn btn-info', style: 'margin-left:10px; margin-right:20px;' %>
               </div>
-
             </div>
           <% end %>
         </div>
         <br>
+        <%= link_to '出品候補の確認', '/lists/show', class: 'btn btn-success' %>
+        <%= link_to '出品済み商品の確認', '/lists/check', class: 'btn btn-primary', style: 'margin-left:20px;' %>
+        <%= link_to 'リサーチ済み商品の確認', '/lists/check', class: 'btn btn-warning', style: 'margin-left:20px;' %>
+        <br><br>
         <h5 style="display:inline;">取得状況： <%= @account.progress %></h5><br>
         <%= paginate @lists %>
         <div style="height:400px; width: 100%; overflow-y:scroll;">

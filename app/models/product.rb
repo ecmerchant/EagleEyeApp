@@ -1,11 +1,12 @@
 class Product < ApplicationRecord
   belongs_to :list, primary_key: 'product_id', foreign_key: 'product_id', optional: true
-  
+
   require 'open-uri'
   require 'rakuten_web_service'
 
   def self.rakuten_search(user, condition)
     account = Account.find_by(user: user)
+
     if account != nil then
       if account.rakuten_app_id != nil then
         app_id = account.rakuten_app_id
@@ -29,11 +30,14 @@ class Product < ApplicationRecord
 
     item_num = results.count
     num = 0
+    logger.debug("===============================")
+    logger.debug(item_num)
     if item_num > 0 then
       #検索結果からアイテム取り出し
       res = Hash.new
       counter = 0
-      while results.has_next_page?
+      begin
+        logger.debug("---")
         checker = Hash.new
         product_list = Array.new
         listing = Array.new
@@ -42,8 +46,17 @@ class Product < ApplicationRecord
           url = result['itemUrl']
           product_id = result['itemCode'].gsub(':','_')
           image1 = result['mediumImageUrls'][0]
+          if image1 != nil then
+            image1 = image1.gsub('?_ex=128x128', '')
+          end
           image2 = result['mediumImageUrls'][1]
+          if image2 != nil then
+            image2 = image2.gsub('?_ex=128x128', '')
+          end
           image3 = result['mediumImageUrls'][2]
+          if image3 != nil then
+            image3 = image3.gsub('?_ex=128x128', '')
+          end
           name = result['itemName']
           price = result['itemPrice']
 
@@ -55,6 +68,69 @@ class Product < ApplicationRecord
           if name.include?('中古') || description.include?('中古') then
             condition = "Used"
           end
+
+          tag_ids = result['tagIds']
+          tag_info = Array.new
+          brand = nil
+          tag_ids.each do |tag|
+            logger.debug("====== Tag =========")
+            logger.debug(tag)
+            qurl = "https://app.rakuten.co.jp/services/api/IchibaTag/Search/20140222?format=json&tagId=" + tag.to_s + "&applicationId=" + app_id
+            logger.debug(qurl)
+            html = open(qurl) do |f|
+              f.read # htmlを読み込んで変数htmlに渡す
+            end
+            logger.debug(html)
+            group_name = /"tagGroupName":"([\s\S]*?)"/.match(html)
+            if group_name != nil then
+              group_name = group_name[1]
+              if group_name == "メーカー" then
+                brand = /"tagName":"([\s\S]*?)"/.match(html)[1]
+                break
+              end
+            end
+          end
+
+          logger.debug("========== Access To Rakuten ============")
+          charset = nil
+          code = nil
+          user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100'
+          begin
+            html = open(url, "User-Agent" => user_agent) do |f|
+              charset = f.charset
+              f.read # htmlを読み込んで変数htmlに渡す
+            end
+            code = /<span class="item_number">([\s\S]*?)<\/span>/.match(html)[1]
+          rescue OpenURI::HTTPError => error
+            logger.debug("--------- HTTP Error ------------")
+            logger.debug(error)
+          end
+          jan = nil
+          if code != nil then
+            if code.length == 13 then
+              jan = code
+            end
+          end
+
+          if jan != nil then
+            logger.debug("============ Product ===============")
+            search_condition = {
+              keyword: jan,
+            }
+            response = RakutenWebService::Ichiba::Product.search(search_condition)
+            response.each do |info|
+              if info['brandName'] != nil then
+                brand = info['brandName']
+              end
+              if info['productNo'] != nil then
+                mpn = info['productNo']
+              end
+              logger.debug(brand)
+              logger.debug(mpn)
+              break
+            end
+          end
+
           res = Hash.new
           res = {
             shop_id: "1",
@@ -64,10 +140,11 @@ class Product < ApplicationRecord
             image1: image1,
             image2: image2,
             image3: image3,
+            jan: jan,
             part_number: mpn,
             description: description,
             category_id: category_id,
-            brand: nil
+            brand: brand
           }
 
           if checker.key?(product_id) == false then
@@ -75,6 +152,9 @@ class Product < ApplicationRecord
             product_list << Product.new(res)
             listing << List.new(user: user, product_id: product_id, shop_id:  "1", status: "searching", condition: "New")
             checker[product_id] = name
+            account.update(
+              progress: "取得済み " + num.to_s + "件"
+            )
           end
         end
         sleep(0.5)
@@ -94,15 +174,16 @@ class Product < ApplicationRecord
           break
         end
         results = results.next_page
-      end
+      end while results.has_next_page?
     end
     account.update(
-      progress: "取得完了 " + num.to_s + "件取得済み"
+      progress: "取得完了 全" + num.to_s + "件取得"
     )
   end
 
 
   def self.yahoo_search(user, condition)
+
     account = Account.find_by(user: user)
     if account != nil then
       if account.yahoo_app_id != nil then
@@ -167,17 +248,36 @@ class Product < ApplicationRecord
           buf = image.xpath('./medium').text
           if i == 0 then
             image1 = buf
+            if buf != nil then
+              image1 = buf.gsub('/g/', '/n/')
+            end
           elsif i == 1 then
             image2 = buf
+            if buf != nil then
+              image2 = buf.gsub('/g/', '/n/')
+            end
           elsif i == 2
             image3 = buf
+            if buf != nil then
+              image3 = buf.gsub('/g/', '/n/')
+            end
           end
         end
+
+        if image2 == nil then
+          image2 = image1.to_s + '_1'
+        end
+
+        if image3 == nil then
+          image3 = image1.to_s + '_2'
+        end
+
         price = hit.xpath('./price').text
         category_id = hit.xpath('./category/current/id').text
         category_name = hit.xpath('./category/current/name').text
         brand = hit.xpath('./brands/name').text
         part_number = hit.xpath('./model').text
+        jan = hit.xpath('./jancode').text
 
         data = Hash.new
         data = {
@@ -189,12 +289,17 @@ class Product < ApplicationRecord
           image2: image2,
           image3: image3,
           brand: brand,
+          jan: jan,
           part_number: part_number,
           category_id: category_id,
           price: price
         }
         product_list << Product.new(data)
         dnum += 1
+        account.update(
+          progress: "取得済み " + dnum.to_s + "件"
+        )
+
         listing << List.new(user: user, product_id: product_id, shop_id:  "2", status: "searching", condition: "New")
         if chash.has_key?(category_id) == false then
           category_list << Category.new(category_id: category_id, name: category_name, shop_id: "2")
@@ -215,7 +320,7 @@ class Product < ApplicationRecord
       end
     end
     account.update(
-      progress: "取得完了 " + dnum.to_s + "件取得済み"
+      progress: "取得完了 全" + dnum.to_s + "件取得"
     )
   end
 

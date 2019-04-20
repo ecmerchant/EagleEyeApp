@@ -8,6 +8,7 @@ module Constants
     price: "仕入価格",
     category_id: "カテゴリ",
     brand: "ブランド名",
+    jan: "JAN",
     part_number: "型番",
     description: "商品説明",
     image2: "画像2",

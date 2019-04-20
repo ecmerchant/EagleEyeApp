@@ -15,7 +15,7 @@ class ListsController < ApplicationController
         @headers.push(row)
       end
     end
-    @lists = List.where(user: user, seller_id: current_seller_id, ng_flg: false)
+    @lists = List.where(user: user, status: 'searching').limit(5)
 
     @body = Array.new
     @template = ListTemplate.where(user: user, list_type: '新規')
@@ -28,16 +28,36 @@ class ListsController < ApplicationController
 
       @headers[2].each do |col|
         case col
-        when 'sku' then
-          thash['sku'] = temp.asin
-        when 'price' then
-          thash['price'] = temp.list_price
+        when 'item_sku' then
+          thash['item_sku'] = temp.product_id
+        when 'standard_price' then
+          thash['standard_price'] = temp.product.price
         when 'product-id' then
-          thash['product-id'] = temp.asin
-        when 'product-id-type' then
-          thash['product-id-type'] = 'ASIN'
+          thash['product-id'] = temp.product_id
+        when 'external_product_id_type' then
+          thash['external_product_id_type'] = 'JAN'
+        when 'external_product_id' then
+          thash['external_product_id'] = temp.product.jan
         when 'condition_type' then
-          thash['condition-type'] = temp.condition
+          thash['condition_type'] = temp.condition
+        when 'main_image_url' then
+          thash['main_image_url'] = temp.product.image1
+        when 'other_image_url1' then
+          thash['other_image_url1'] = temp.product.image2
+        when 'other_image_url2' then
+          thash['other_image_url2'] = temp.product.image3
+        when 'model' || 'part_number' then
+          thash['model'] = temp.product.part_number
+          thash['part_number'] = temp.product.part_number
+        when 'brand_name' || 'manufacturer' then
+          thash['brand_name'] = temp.product.brand
+          thash['manufacturer'] = temp.product.brand
+        when 'product_description' then
+          thash['product_description'] = temp.product.description.gsub(/\r\n|\r|\n|\t/, " ")
+        when 'item_name' then
+          thash['item_name'] = temp.product.title
+        when 'update_delete' then
+          thash['update_delete'] = 'Update'
         else
 
         end
@@ -60,31 +80,30 @@ class ListsController < ApplicationController
     @login_user = current_user
     user = current_user.email
     @account = Account.find_or_create_by(user: user)
-    current_seller_id = @account.seller_id
-    @lists = List.where(user: user, seller_id: current_seller_id, ng_flg: false)
+    @lists = List.where(user: user, status: 'searching')
+    @lists.update_all(
+      status: 'listing'
+    )
 
-    flg_list = Array.new
-
-    @lists.each do |list|
-      flg_list << List.new(user: user, asin: list.asin, list_flg: true)
-    end
-    List.import flg_list, on_duplicate_key_update: {constraint_name: :for_upsert_lists, columns: [:list_flg]}
+    @account.update(
+      progress: "処理受付前"
+    )
     redirect_to lists_check_path
   end
 
   def check
-    @login_user = current_user
+
     user = current_user.email
+    @login_user = current_user
     @account = Account.find_or_create_by(user: user)
-    current_seller_id = @account.seller_id
-    temp = List.where(user: user, list_flg: true)
-    @asins = temp.group(:asin).pluck(:asin)
-    @sellers = temp.group(:seller_id).pluck(:seller_id)
+    @shop_id = @account.selected_shop_id
+    @lists = List.where(user: user, shop_id: @shop_id, status: "listing").page(params[:page]).per(100)
+    @headers = Constants::HD
 
     respond_to do |format|
       format.html
         if request.post? then
-          data = params[:asin_del]
+          data = params[:product_del]
           logger.debug("======== DEL ===========")
           if data != nil then
             ext = File.extname(data.path)

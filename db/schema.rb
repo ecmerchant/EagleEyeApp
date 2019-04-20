@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_04_10_163507) do
+ActiveRecord::Schema.define(version: 2019_04_20_105259) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -37,6 +37,14 @@ ActiveRecord::Schema.define(version: 2019_04_10_163507) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["category_id", "shop_id"], name: "for_upsert_categories", unique: true
+  end
+
+  create_table "feed_products", force: :cascade do |t|
+    t.string "group"
+    t.string "name"
+    t.string "feed_type"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "list_templates", force: :cascade do |t|
@@ -75,6 +83,7 @@ ActiveRecord::Schema.define(version: 2019_04_10_163507) do
     t.string "category_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "jan"
     t.index ["product_id", "shop_id"], name: "for_upsert_products", unique: true
   end
 
