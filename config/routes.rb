@@ -1,6 +1,12 @@
 require 'resque/server'
 Rails.application.routes.draw do
 
+  get 'prices/edit'
+  post 'prices/edit'
+  get 'prices/template'
+
+
+  get 'lists/put'
   get 'lists/show'
   get 'lists/check'
   post 'lists/check'

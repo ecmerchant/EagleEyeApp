@@ -3,19 +3,6 @@
     <div class="row my-4">
       <div class="col-lg-12">
         <h2>リサーチ済みデータの確認</h2>
-        <div class="form-inline">
-          <%= link_to 'テンプレート取得', {:controller => 'lists', :action => 'check', :format => 'xlsx'}, {class: 'btn btn-success', id: 'download_template', style: 'margin-right: 20px;'} %>
-          <%= form_tag('/lists/check', method:'post', multipart: true, id:"checkup") do %>
-            <div class="form-inline">
-              <label style="vertical-align:middle;">
-                <span class="btn btn-warning" style="width:210px;">
-                  リサーチ済み商品の削除
-                  <input type="file" name="product_del" onChange="$('#checkup').submit();" style="display:none">
-                </span>
-              </label>
-            </div>
-          <% end %>
-        </div>
         <br>
         <%= paginate @lists %>
         <div style="height:400px; width: 100%; overflow-y:scroll;">

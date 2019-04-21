@@ -44,7 +44,7 @@ class ListsController < ApplicationController
         when 'item_sku' then
           thash['item_sku'] = temp.product_id
         when 'standard_price' then
-          thash['standard_price'] = temp.product.price
+          thash['standard_price'] = Price.calc(user, temp.product.price)
         when 'product-id' then
           thash['product-id'] = temp.product_id
         when 'external_product_id_type' then
@@ -88,29 +88,34 @@ class ListsController < ApplicationController
         when 'code' then
           yhash['code'] = temp.product_id
         when 'price' then
-          yhash['price'] = temp.product.price
+          yhash['price'] = Price.calc(user, temp.product.price)
         when 'product-id' then
           thash['product-id'] = temp.product_id
-        when 'external_product_id_type' then
-          thash['external_product_id_type'] = 'JAN'
-        when 'external_product_id' then
-          thash['external_product_id'] = temp.product.jan
+        when 'jan' then
+          thash['jan'] = temp.product.jan
         when 'condition_type' then
           thash['condition_type'] = temp.condition
-        when 'main_image_url' then
-          thash['main_image_url'] = temp.product.image1
-        when 'other_image_url1' then
-          thash['other_image_url1'] = temp.product.image2
-        when 'other_image_url2' then
-          thash['other_image_url2'] = temp.product.image3
+        when 'caption' then
+          buf = ""
+          if temp.product.image1 != nil then
+            buf = buf + '<img src="' + temp.product.image1 + '"><br>'
+          end
+          if temp.product.image2 != nil then
+            buf = buf + '<img src="' + temp.product.image2 + '"><br>'
+          end
+          if temp.product.image3 != nil then
+            buf = buf + '<img src="' + temp.product.image3 + '"><br>'
+          end
+          buf = '<div>' + buf + '</div>'
+          thash['caption'] = buf
         when 'model' || 'part_number' then
           yhash['model'] = temp.product.part_number
           yhash['part_number'] = temp.product.part_number
         when 'brand_name' || 'manufacturer' then
           yhash['brand_name'] = temp.product.brand
           yhash['manufacturer'] = temp.product.brand
-        when 'product_description' then
-          yhash['product_description'] = temp.product.description.gsub(/\r\n|\r|\n|\t/, " ")
+        when 'explanation' then
+          yhash['explanation'] = temp.product.description.gsub(/\r\n|\r|\n|\t/, " ")
         when 'name' then
           yhash['name'] = temp.product.title
         when 'update_delete' then
@@ -128,7 +133,13 @@ class ListsController < ApplicationController
           #html用の処理を書く
       end
       format.csv do
-        fname = "アマゾン出品ファイル_" + Time.now.strftime("%Y%m%D%H%M%S") + ".txt"
+        logger.debug(params[:tag])
+        @tag = params[:tag]
+        if @tag == "amazon" then
+          fname = "アマゾン出品ファイル_" + Time.now.strftime("%Y%m%D%H%M%S") + ".txt"
+        else
+          fname = "ヤフーショッピング出品ファイル_" + Time.now.strftime("%Y%m%D%H%M%S") + ".txt"
+        end
         send_data render_to_string, filename: fname, type: :csv
       end
     end
