@@ -24,7 +24,7 @@ class ListsController < ApplicationController
       end
     end
 
-    @lists = List.where(user: user, status: 'searching').limit(5)
+    @lists = List.where(user: user, status: 'searching').limit(1000)
 
     @body = Array.new
     @body2 = Array.new
