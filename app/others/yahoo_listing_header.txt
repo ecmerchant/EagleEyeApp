@@ -1,0 +1,1 @@
+path	taxable	delivery	condition	product-category	sort	sp-additional	lead-time-instock	lead-time-outstock

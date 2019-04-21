@@ -22,11 +22,7 @@
               <% @body.each do |row| %>
               <tr>
                 <% @headers[2].each do |col| %>
-                <% if col == 'price' then %>
-                <td><%= text_field_tag 'price[' + row['sku'] + ']', row[col], class: 'form-control', style: 'text-align:center;' %></td>
-                <% else %>
                 <td><%= row[col] %></td>
-                <% end %>
                 <% end %>
               </tr>
               <% end %>
@@ -47,14 +43,10 @@
               <% end %>
             </thead>
             <tbody>
-              <% @body.each do |row| %>
+              <% @body2.each do |row| %>
               <tr>
-                <% @headers[2].each do |col| %>
-                <% if col == 'price' then %>
-                <td><%= text_field_tag 'price[' + row['sku'] + ']', row[col], class: 'form-control', style: 'text-align:center;' %></td>
-                <% else %>
+                <% @headers2[0].each do |col| %>
                 <td><%= row[col] %></td>
-                <% end %>
                 <% end %>
               </tr>
               <% end %>

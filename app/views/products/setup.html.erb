@@ -17,10 +17,10 @@
         <% end %>
         <% end %>
         <%= form_tag('/products/setup', method:'post') do %>
-          <p class="lead" style="display:inline;margin-right:20px;">アマゾン新規出品の設定</p>
+          <p class="lead" style="display:inline;margin-right:20px;"><b>アマゾン新規出品の設定</b></p>
           <%= link_to '各項目の詳細について', 'https://docs.google.com/spreadsheets/d/19wm9__Z6ORCUepbvobbN04jfmcHZHizAac4ubbqrdBE/edit?usp=sharing', target: '_blank' %>
           <div class="form-inline" style="margin-top:10px; margin-bottom:10px;">
-            <%= submit_tag '設定', class: 'btn btn-info', style: 'margin-right:20px; width:100px;' %>
+            <%= submit_tag 'アマゾン設定', class: 'btn btn-info', style: 'margin-right:20px;' %>
             <div class="form-inline">
             <label style="margin-right: 20px;">出品カテゴリの選択</label>
             <%= select_tag 'top_category', options_for_select(@groups, @account.selected_group) , class: 'form-control' %>
@@ -46,6 +46,29 @@
                 <% else %>
                 <td class="align-middle" style='width:50%;'><%= select_tag 'text[' + row[2] + ']', options_for_select(@feed_select, init) , class: 'form-control' %></td>
                 <% end %>
+              </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% end %>
+        <br>
+        <%= form_tag('/products/update', method:'post') do %>
+          <p class="lead" style="display:inline;margin-right:20px;"><b>ヤフーショッピング出品の設定</b></p>
+          <%= submit_tag 'ヤフショ設定', class: 'btn btn-info', style: 'margin-right:20px;' %>
+          <br><br>
+          <table class="table table-striped table-hover table-bordered" style='width:1200px; table-layout:fixed;'>
+            <thead class="thead-light">
+              <tr>
+                <th style='width:40%;'>項目コード</th>
+                <th style='width:60%;'>設定値</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @headers2.transpose.each do |row| %>
+              <tr>
+                <td class="align-middle" style='width:40%;'><%= row[0] %></td>
+                <% if @template2.find_by(header: row[0]) != nil then init = @template2.find_by(header: row[0]).value else init = nil end %>
+                <td class="align-middle" style='width:60%;'><%= text_field_tag 'text[' + row[0] + ']', init, class: 'form-control' %></td>
               </tr>
               <% end %>
             </tbody>

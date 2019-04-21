@@ -27,10 +27,14 @@ class ListsController < ApplicationController
     @lists = List.where(user: user, status: 'searching').limit(5)
 
     @body = Array.new
-    @template = ListTemplate.where(user: user, list_type: '新規')
+    @body2 = Array.new
+
+    @template = ListTemplate.where(user: user, shop_id: 3, list_type: '新規')
+    @template2 = ListTemplate.where(user: user, shop_id: 2, list_type: '新規')
 
     @lists.each do |temp|
       thash = Hash.new
+
       @template.each do |ch|
         thash[ch.header] = ch.value
       end
@@ -72,6 +76,51 @@ class ListsController < ApplicationController
         end
       end
       @body.push(thash)
+
+      yhash = Hash.new
+
+      @template2.each do |ch|
+        yhash[ch.header] = ch.value
+      end
+
+      @headers2[0].each do |col|
+        case col
+        when 'code' then
+          yhash['code'] = temp.product_id
+        when 'price' then
+          yhash['price'] = temp.product.price
+        when 'product-id' then
+          thash['product-id'] = temp.product_id
+        when 'external_product_id_type' then
+          thash['external_product_id_type'] = 'JAN'
+        when 'external_product_id' then
+          thash['external_product_id'] = temp.product.jan
+        when 'condition_type' then
+          thash['condition_type'] = temp.condition
+        when 'main_image_url' then
+          thash['main_image_url'] = temp.product.image1
+        when 'other_image_url1' then
+          thash['other_image_url1'] = temp.product.image2
+        when 'other_image_url2' then
+          thash['other_image_url2'] = temp.product.image3
+        when 'model' || 'part_number' then
+          yhash['model'] = temp.product.part_number
+          yhash['part_number'] = temp.product.part_number
+        when 'brand_name' || 'manufacturer' then
+          yhash['brand_name'] = temp.product.brand
+          yhash['manufacturer'] = temp.product.brand
+        when 'product_description' then
+          yhash['product_description'] = temp.product.description.gsub(/\r\n|\r|\n|\t/, " ")
+        when 'name' then
+          yhash['name'] = temp.product.title
+        when 'update_delete' then
+          yhash['update_delete'] = 'Update'
+        else
+
+        end
+      end
+      @body2.push(yhash)
+
     end
 
     respond_to do |format|

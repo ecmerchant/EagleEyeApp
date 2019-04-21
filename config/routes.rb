@@ -16,6 +16,7 @@ Rails.application.routes.draw do
   get 'products/listup'
   post 'products/listup'
   post 'products/import'
+  post 'products/update'
 
   root to: 'products#show'
 

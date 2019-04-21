@@ -46,7 +46,11 @@ class ProductsController < ApplicationController
 
     @account = Account.find_or_create_by(user: user)
     @headers = Array.new
-    @template = ListTemplate.where(user: user, shop_id: "3", list_type: '新規')
+    @template = ListTemplate.where(user: user, shop_id: 3, list_type: '新規')
+
+    @headers2 = Array.new
+    @template2 = ListTemplate.where(user: user, shop_id: 2, list_type: '新規')
+
     @groups = FeedProduct.group(:group).pluck(:group)
     @feed_select = FeedProduct.where(group: @account.selected_group).group(:feed_type).pluck(:feed_type)
 
@@ -56,11 +60,19 @@ class ProductsController < ApplicationController
         @headers.push(row)
       end
     end
+
+    File.open('app/others/yahoo_listing_header.txt', 'r', encoding: 'Windows-31J', undef: :replace, replace: '*') do |file|
+      csv = CSV.new(file, encoding: 'Windows-31J', col_sep: "\t")
+      csv.each do |row|
+        @headers2.push(row)
+      end
+    end
+
     if request.post? then
-      if params[:commit] == "設定" then
+      if params[:commit] == "アマゾン設定" then
         data = params[:text]
         data.each do |key, value|
-          tp = ListTemplate.find_or_create_by(user: user, shop_id: "3", list_type: '新規', header: key)
+          tp = ListTemplate.find_or_create_by(user: user, shop_id: 3, list_type: '新規', header: key)
           tp.update(
             value: value
           )
@@ -73,6 +85,20 @@ class ProductsController < ApplicationController
         @feed_select = FeedProduct.where(group: @account.selected_group).group(:feed_type).pluck(:feed_type)
       end
     end
+  end
+
+  def update
+    if request.post? then
+      user = current_user.email
+      data = params[:text]
+      data.each do |key, value|
+        tp = ListTemplate.find_or_create_by(user: user, shop_id: 2, list_type: '新規', header: key)
+        tp.update(
+          value: value
+        )
+      end
+    end
+    redirect_to products_setup_path
   end
 
   def import
