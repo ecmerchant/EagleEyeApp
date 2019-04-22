@@ -90,7 +90,7 @@ class Product < ApplicationRecord
               end
             end
           end
-
+=begin
           logger.debug("========== Access To Rakuten ============")
           charset = nil
           code = nil
@@ -108,6 +108,7 @@ class Product < ApplicationRecord
             logger.debug("--------- HTTP Error ------------")
             logger.debug(error)
           end
+=end
           jan = nil
           if code != nil then
             if code.length == 13 then
