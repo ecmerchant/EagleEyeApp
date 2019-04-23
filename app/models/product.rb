@@ -147,7 +147,7 @@ class Product < ApplicationRecord
             brand: brand
           }
 
-          if checker.key?(product_id) == false then
+          if checker.key?(product_id) == false && product_id != nil then
             num += 1
             product_list << Product.new(res)
             listing << List.new(user: user, product_id: product_id, shop_id:  "1", status: "searching", condition: "New")
@@ -300,11 +300,13 @@ class Product < ApplicationRecord
           progress: "取得済み " + dnum.to_s + "件"
         )
 
-        listing << List.new(user: user, product_id: product_id, shop_id:  "2", status: "searching", condition: "New")
-        if chash.has_key?(category_id) == false then
-          category_list << Category.new(category_id: category_id, name: category_name, shop_id: "2")
-          chash[category_id] = category_name
-        end
+        if product_id != nil then
+          listing << List.new(user: user, product_id: product_id, shop_id:  "2", status: "searching", condition: "New")
+          if chash.has_key?(category_id) == false then
+            category_list << Category.new(category_id: category_id, name: category_name, shop_id: "2")
+            chash[category_id] = category_name
+          end
+        end 
       end
 
       if data != nil then
