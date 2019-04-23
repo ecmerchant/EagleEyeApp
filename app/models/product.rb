@@ -90,7 +90,7 @@ class Product < ApplicationRecord
               end
             end
           end
-
+=begin
           logger.debug("========== Access To Rakuten ============")
           charset = nil
           code = nil
@@ -100,11 +100,15 @@ class Product < ApplicationRecord
               charset = f.charset
               f.read # htmlを読み込んで変数htmlに渡す
             end
-            code = /<span class="item_number">([\s\S]*?)<\/span>/.match(html)[1]
+            code = /<span class="item_number">([\s\S]*?)<\/span>/.match(html)
+            if code != nil then 
+              code = code[1]
+            end
           rescue OpenURI::HTTPError => error
             logger.debug("--------- HTTP Error ------------")
             logger.debug(error)
           end
+=end
           jan = nil
           if code != nil then
             if code.length == 13 then
