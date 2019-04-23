@@ -101,7 +101,7 @@ class Product < ApplicationRecord
               f.read # htmlを読み込んで変数htmlに渡す
             end
             code = /<span class="item_number">([\s\S]*?)<\/span>/.match(html)
-            if code != nil then 
+            if code != nil then
               code = code[1]
             end
           rescue OpenURI::HTTPError => error
@@ -110,6 +110,8 @@ class Product < ApplicationRecord
           end
 =end
           jan = nil
+          code = nil
+          
           if code != nil then
             if code.length == 13 then
               jan = code
@@ -310,7 +312,7 @@ class Product < ApplicationRecord
             category_list << Category.new(category_id: category_id, name: category_name, shop_id: "2")
             chash[category_id] = category_name
           end
-        end 
+        end
       end
 
       if data != nil then
