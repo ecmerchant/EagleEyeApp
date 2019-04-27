@@ -13,7 +13,10 @@ class ListsController < ApplicationController
         List.where(user: user, status: 'searching').update_all(status: 'before_listing')
       else
         checked = params[:check]
-
+        List.where(user: user, status: 'before_listing').update_all(status: 'searching')
+        checked.each do |key, value|
+          List.where(user: user, product_id: key).update(status: 'before_listing')
+        end
       end
     end
     csv = nil
