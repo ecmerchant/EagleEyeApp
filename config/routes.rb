@@ -8,6 +8,7 @@ Rails.application.routes.draw do
 
   get 'lists/put'
   get 'lists/show'
+  post 'lists/show'
   get 'lists/check'
   post 'lists/check'
   get 'lists/regist'
@@ -16,6 +17,7 @@ Rails.application.routes.draw do
 
   get 'products/check'
   get 'products/show'
+  get 'products/search'
   post 'products/search'
   get 'products/setup'
   post 'products/setup'

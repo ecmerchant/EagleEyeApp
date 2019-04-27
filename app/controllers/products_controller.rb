@@ -5,22 +5,25 @@ class ProductsController < ApplicationController
     @login_user = current_user
     @account = Account.find_or_create_by(user: user)
     @shop_id = @account.selected_shop_id
-    @lists = List.where(user: user, shop_id: @shop_id, status: "searching").page(params[:page]).per(100)
+    @lists = List.where(user: user, shop_id: @shop_id, status: "searching").page(params[:page]).per(3000)
     @headers = Constants::HD
-
   end
 
   def search
+    user = current_user.email
     if request.post? then
-      user = current_user.email
       shop_id = params[:shop_id]
       keyword = params[:keyword]
       store_id = params[:store_id]
       category_id = params[:category_id]
+      min_price = params[:min_price]
+      max_price = params[:max_price]
       condition = {
         keyword: keyword,
         store_id: store_id,
-        category_id: category_id
+        category_id: category_id,
+        min_price: min_price,
+        max_price: max_price
       }
       @account = Account.find_or_create_by(user: user)
 
@@ -28,15 +31,47 @@ class ProductsController < ApplicationController
         @account.update(
           selected_shop_id: shop_id,
           search_start: Time.now,
-          progress: "処理受付"
+          last_keyword: keyword,
+          last_store_id: store_id,
+          last_category_id: category_id,
+          last_min_price: min_price,
+          last_max_price: max_price,
+          progress: "処理受付しました　進捗表示は画面を更新してください"
         )
+        temp = SearchCondition.create(
+          user: user,
+          shop_id: shop_id,
+          keyword: keyword,
+          store_id: store_id,
+          category_id: category_id,
+          min_price: min_price,
+          max_price: max_price,
+        )
+        search_id = temp.id
+        condition[:search_id] = search_id
         List.where(user: user, status: 'searching').update_all(
           status: 'reject'
         )
         ProductSearchJob.perform_later(user, condition, shop_id)
       end
+      redirect_to products_show_path
+    else
+      #get の場合
+      @login_user = current_user
+      @headers = {
+        id: "検索ID",
+        shop_id: "検索店舗",
+        keyword: "キーワード",
+        store_id: "ショップID",
+        category_id: "カテゴリID",
+        min_price: "最低価格",
+        maxPrice: "最高価格"
+      }
+      @searches = SearchCondition.where(
+        user: user
+      ).page(params[:page]).per(30)
+
     end
-    redirect_to products_show_path
   end
 
 
@@ -130,14 +165,15 @@ class ProductsController < ApplicationController
   end
 
   def check
-
     user = current_user.email
     @login_user = current_user
     @account = Account.find_or_create_by(user: user)
     @shop_id = @account.selected_shop_id
-    @lists = List.where(user: user, shop_id: @shop_id, status: "reject").page(params[:page]).per(100)
-    @headers = Constants::HD
+    search_id = params[:search_id]
+    logger.debug(search_id)
+    @lists = List.where(user: user, search_id: search_id.to_s).page(params[:page]).per(100)
 
+    @headers = Constants::HD
   end
 
 end

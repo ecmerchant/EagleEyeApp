@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_04_21_110143) do
+ActiveRecord::Schema.define(version: 2019_04_27_111736) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -28,6 +28,8 @@ ActiveRecord::Schema.define(version: 2019_04_21_110143) do
     t.string "last_category_id"
     t.string "last_store_id"
     t.string "selected_group"
+    t.integer "last_min_price"
+    t.integer "last_max_price"
   end
 
   create_table "categories", force: :cascade do |t|
@@ -66,6 +68,7 @@ ActiveRecord::Schema.define(version: 2019_04_21_110143) do
     t.string "condition"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "search_id"
     t.index ["user", "product_id", "shop_id"], name: "for_upsert_lists", unique: true
   end
 
@@ -93,6 +96,18 @@ ActiveRecord::Schema.define(version: 2019_04_21_110143) do
     t.datetime "updated_at", null: false
     t.string "jan"
     t.index ["product_id", "shop_id"], name: "for_upsert_products", unique: true
+  end
+
+  create_table "search_conditions", force: :cascade do |t|
+    t.string "user"
+    t.string "shop_id"
+    t.text "keyword"
+    t.string "category_id"
+    t.string "store_id"
+    t.integer "min_price"
+    t.integer "max_price"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "shops", force: :cascade do |t|

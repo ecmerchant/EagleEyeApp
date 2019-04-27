@@ -6,7 +6,16 @@ class ListsController < ApplicationController
     @login_user = current_user
     user = current_user.email
     @account = Account.find_or_create_by(user: user)
+    if request.post? then
+      logger.debug(params)
+      chk_all = params[:all]
+      if chk_all == "true" then
+        List.where(user: user, status: 'searching').update_all(status: 'before_listing')
+      else
+        checked = params[:check]
 
+      end
+    end
     csv = nil
     @headers = Array.new
     File.open('app/others/amazon_new_listing_template.txt', 'r', encoding: 'Windows-31J', undef: :replace, replace: '*') do |file|
@@ -24,7 +33,7 @@ class ListsController < ApplicationController
       end
     end
 
-    @lists = List.where(user: user, status: 'searching').limit(1000)
+    @lists = List.where(user: user, status: 'before_listing').limit(3000)
 
     @body = Array.new
     @body2 = Array.new

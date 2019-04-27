@@ -5,30 +5,38 @@
         <h3>商品情報の取得</h3>
         <div class="form-inline">
           <%= form_tag('/products/search', method:'post', id:'products_search') do %>
-            <div class="form-group">
+            <div class="form-inline" style="margin-top:10px;">
               <label style='margin-right:10px;'><b>取得元</b>
                 <%= select_tag 'shop_id', options_for_select({"楽天市場" => "1", "ヤフショ" => "2"}, @shop_id), class:'form-control', style:'margin-left:10px;margin-right:20px;', id:'select_shop' %>
               </label>
-              <div class="form-inline" style="margin-top:10px;">
-                <label style='margin-right:10px;'><b>検索条件</b></label>
-                <label>キーワード
-                <%= text_field_tag('keyword', nil, class: 'form-control', style: 'margin-left:10px; margin-right:20px; width:220px;') %>
-                </label>
-                <label>ショップID
-                <%= text_field_tag('store_id', nil, class: 'form-control', style: 'margin-left:10px; margin-right:20px; width:120px;') %>
-                </label>
-                <label>カテゴリーID
-                <%= text_field_tag('category_id', nil, class: 'form-control', style: 'margin-left:10px; margin-right:20px; width:120px;') %>
-                </label>
-                <%= submit_tag '取得開始', class: 'btn btn-info', style: 'margin-left:10px; margin-right:20px;' %>
-              </div>
+              <label style='margin-right:10px;'><b>検索条件</b></label>
+              <label>キーワード
+              <%= text_field_tag('keyword', @account.last_keyword, class: 'form-control', style: 'margin-left:10px; margin-right:20px; width:220px;') %>
+              </label>
+              <label>ショップID
+              <%= text_field_tag('store_id', @account.last_store_id, class: 'form-control', style: 'margin-left:10px; margin-right:20px; width:120px;') %>
+              </label>
+              <label>カテゴリーID
+              <%= text_field_tag('category_id', @account.last_category_id, class: 'form-control', style: 'margin-left:10px; margin-right:20px; width:120px;') %>
+              </label>
+            </div>
+            <div class="form-inline" style="margin-top:10px;">
+              <label>最低価格
+              <%= text_field_tag('min_price', @account.last_min_price, class: 'form-control', style: 'margin-left:10px; margin-right:20px; width:120px;') %>
+              </label>
+              <label>最高価格
+              <%= text_field_tag('max_price', @account.last_max_price, class: 'form-control', style: 'margin-left:10px; margin-right:20px; width:120px;') %>
+              </label>
+              <%= submit_tag '取得開始', class: 'btn btn-info', style: 'margin-left:10px; margin-right:20px;' %>
             </div>
           <% end %>
         </div>
         <br>
+        <%= form_tag('/lists/show', method:'post') do %>
+        <%= submit_tag '出品候補の確認', class: 'btn btn-primary', style: 'margin-right:20px;' %>
         <%= link_to '出品候補の確認', '/lists/show', class: 'btn btn-success' %>
         <%= link_to '出品済み商品の確認', '/lists/check', class: 'btn btn-primary', style: 'margin-left:20px;' %>
-        <%= link_to 'リサーチ済み商品の確認', '/products/check', class: 'btn btn-warning', style: 'margin-left:20px;' %>
+        <%= link_to 'リサーチ済み商品の確認', '/products/search', class: 'btn btn-warning', style: 'margin-left:20px;' %>
         <br><br>
         <h5 style="display:inline;">取得状況： <%= @account.progress %></h5><br>
         <%= paginate @lists %>
@@ -36,8 +44,9 @@
         <table class="table table-striped table-hover table-bordered ellipsis" id="list_table">
           <thead class="thead-light">
             <tr>
+              <th class="align-middle"><div class="form-check form-check-inline"><%= check_box_tag 'all',true, false, {class:'form-check-input', id: 'check_all'} %><label for="check_all" class="form-check-label">出品</label></div></th>
               <% @headers.each do |key, value| %>
-              <th><%= value %></th>
+              <th class="align-middle"><%= value %></th>
               <% end %>
             </tr>
           </thead>
@@ -45,6 +54,7 @@
             <% if @lists != nil then %>
             <% @lists.each do |list| %>
             <tr>
+              <td class="align-middle align-center"><%= check_box_tag 'check[' + list.product_id + ']',true, false, {class:'chk', style:'width:20px;margin:auto'}  %></td>
               <% @headers.each do |key, value| %>
                 <% if list.product != nil then %>
                   <% case key %>
@@ -73,7 +83,17 @@
           </tbody>
         </table>
         </div>
+        <% end %>
       </div>
     </div>
   </div>
 </div>
+
+<script type="text/javascript">
+  $(document).on('turbolinks:load', function() {
+    $('#check_all').on('click', function() {
+      console.log('click');
+      $('.chk').prop('checked', $(this).is(':checked'));
+    });
+  });
+</script>
