@@ -9,6 +9,12 @@ class ProductsController < ApplicationController
     @headers = Constants::HD
   end
 
+  def explain
+    user = current_user.email
+    @login_user = current_user
+    @account = Account.find_or_create_by(user: user)
+  end
+
   def search
     user = current_user.email
     if request.post? then

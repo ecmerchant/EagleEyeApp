@@ -2,7 +2,7 @@
   <div class="page-header" id="banner">
     <div class="row my-4">
       <div class="col-12">
-        <h3>商品情報の取得</h3>
+        <h3>商品情報の取得</h3><%= link_to '商品情報の取得についての説明はこちら', '/products/explain'%>
         <div class="form-inline">
           <%= form_tag('/products/search', method:'post', id:'products_search') do %>
             <div class="form-inline" style="margin-top:10px;">
@@ -33,7 +33,7 @@
         </div>
         <br>
         <%= form_tag('/lists/show', method:'post') do %>
-        <%= submit_tag '出品候補の確認', class: 'btn btn-primary', style: 'margin-right:20px;' %>
+        <%= submit_tag '出品候補の確認', class: 'btn btn-primary' %>
         <%= link_to '出品済み商品の確認', '/lists/check', class: 'btn btn-primary', style: 'margin-left:20px;' %>
         <%= link_to 'リサーチ済み商品の確認', '/products/search', class: 'btn btn-warning', style: 'margin-left:20px;' %>
         <br><br>

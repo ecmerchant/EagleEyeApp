@@ -5,7 +5,6 @@ Rails.application.routes.draw do
   post 'prices/edit'
   get 'prices/template'
 
-
   get 'lists/put'
   get 'lists/show'
   post 'lists/show'
@@ -25,6 +24,7 @@ Rails.application.routes.draw do
   post 'products/listup'
   post 'products/import'
   post 'products/update'
+  get 'products/explain'
 
   root to: 'products#show'
 

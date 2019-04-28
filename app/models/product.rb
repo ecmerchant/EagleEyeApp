@@ -14,6 +14,7 @@ class Product < ApplicationRecord
         app_id = ENV['RAKUTEN_APP_ID']
       end
     end
+    dcounter = 0
 
     RakutenWebService.configure do |c|
       c.application_id = ENV['RAKUTEN_APP_ID']
@@ -168,12 +169,26 @@ class Product < ApplicationRecord
 
           if checker.key?(product_id) == false && product_id != nil then
             num += 1
+            dcounter += 1
             product_list << Product.new(res)
             listing << List.new(user: user, product_id: product_id, shop_id:  "1", status: "searching", condition: condition, search_id: search_id)
             checker[product_id] = name
             account.update(
-              progress: "取得済み " + num.to_s + "件"
+              progress: "取得中 " + num.to_s + "件取得済み"
             )
+            if dcounter == 10 then
+              if res != nil then
+                cols = res.keys
+                cols.delete_at(0)
+                cols.delete_at(0)
+                Product.import product_list, on_duplicate_key_update: {constraint_name: :for_upsert_products, columns: cols}
+                List.import listing, on_duplicate_key_update: {constraint_name: :for_upsert_lists, columns: [:status, :condition, :search_id]}
+                account.update(
+                  progress: "取得中 " + num.to_s + "件取得済み"
+                )
+              end
+              dcounter = 0
+            end
           end
         end
         sleep(0.5)
@@ -211,7 +226,7 @@ class Product < ApplicationRecord
         app_id = ENV['YAHOO_APPID']
       end
     end
-
+    dcounter = 0
     query = condition[:keyword]
     dcategory_id = condition[:category_id]
     store_id = condition[:store_id]
@@ -340,7 +355,7 @@ class Product < ApplicationRecord
           product_list << Product.new(data)
           dnum += 1
           account.update(
-            progress: "取得済み " + dnum.to_s + "件"
+            progress: "取得中 " + dnum.to_s + "件取得済み"
           )
 
           if product_id != nil then
@@ -348,6 +363,21 @@ class Product < ApplicationRecord
             if chash.has_key?(category_id) == false then
               category_list << Category.new(category_id: category_id, name: category_name, shop_id: "2")
               chash[category_id] = category_name
+            end
+          end
+          dcounter += 1
+          if dcounter == 10 then
+            dcounter = 0
+            if data != nil then
+              cols = data.keys
+              cols.delete_at(0)
+              cols.delete_at(0)
+              account.update(
+                progress: "取得中 " + dnum.to_s + "件取得済み"
+              )
+              Product.import product_list, on_duplicate_key_update: {constraint_name: :for_upsert_products, columns: cols}
+              List.import listing, on_duplicate_key_update: {constraint_name: :for_upsert_lists, columns: [:status, :condition, :search_id]}
+              Category.import category_list, on_duplicate_key_update: {constraint_name: :for_upsert_categories, columns: [:name]}
             end
           end
         end
