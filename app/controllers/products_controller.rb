@@ -5,7 +5,7 @@ class ProductsController < ApplicationController
     @login_user = current_user
     @account = Account.find_or_create_by(user: user)
     @shop_id = @account.selected_shop_id
-    @lists = List.where(user: user, shop_id: @shop_id).where('(status = ?) OR (status = ?)', "searching", "before_listing").page(params[:page]).per(3000)
+    @lists = List.where(user: user, shop_id: @shop_id, status: 'searching').page(params[:page]).per(3000)
     @headers = Constants::HD
   end
 
@@ -55,7 +55,7 @@ class ProductsController < ApplicationController
         )
         search_id = temp.id
         condition[:search_id] = search_id
-        List.where(user: user, status: 'searching').update_all(
+        List.where(user: user).where('(status = ?) OR (status = ?)', "searching", "before_listing").update_all(
           status: 'reject'
         )
         ProductSearchJob.perform_later(user, condition, shop_id)

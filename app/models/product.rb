@@ -24,7 +24,8 @@ class Product < ApplicationRecord
     search_condition = {
       keyword: condition[:keyword],
       shopCode: condition[:store_id],
-      genreId: condition[:category_id]
+      genreId: condition[:category_id],
+      field: 0
     }
 
     min_price = condition[:min_price].to_i
