@@ -23,10 +23,16 @@ class Product < ApplicationRecord
     search_condition = Hash.new
     search_condition = {
       keyword: condition[:keyword],
-      shopCode: condition[:store_id],
-      genreId: condition[:category_id],
       field: 0
     }
+
+    if condition[:store_id] != nil then
+      search_condition[:shopCode] = condition[:store_id]
+    end
+
+    if condition[:category_id] != nil then
+      search_condition[:genreId] = condition[:category_id]
+    end
 
     min_price = condition[:min_price].to_i
     max_price = condition[:max_price].to_i
@@ -46,11 +52,24 @@ class Product < ApplicationRecord
     num = 0
     logger.debug("===============================")
     logger.debug(item_num)
+    logger.debug(results.has_next_page?)
+    nchecker = true
+
     if item_num > 0 then
       #検索結果からアイテム取り出し
+
+
       res = Hash.new
       counter = 0
       begin
+
+        nchecker = results.has_next_page?
+        logger.debug(results.has_next_page?)
+        if nchecker == true then
+          logger.debug("-===============================-")
+          next_result = results.next_page
+        end
+        
         logger.debug("---")
         checker = Hash.new
         product_list = Array.new
@@ -208,8 +227,11 @@ class Product < ApplicationRecord
         if counter > 29 then
           break
         end
-        results = results.next_page
-      end while results.has_next_page?
+        logger.debug("===========================")
+        logger.debug(nchecker)
+        results = next_result
+
+      end while nchecker == true
     end
     account.update(
       progress: "取得完了 全" + num.to_s + "件取得"
