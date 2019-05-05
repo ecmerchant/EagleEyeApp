@@ -106,8 +106,10 @@ class ProductsController < ApplicationController
         if temp != nil then
           temp.delete
         end
+        buf = List.where(user: user, search_id: tag).delete_all
       else
         SearchCondition.where(user: user).delete_all
+        buf = List.where(user: user).delete_all
       end
     end
     redirect_back(fallback_location: root_path)
