@@ -58,6 +58,11 @@ class ProductsController < ApplicationController
         List.where(user: user).where('(status = ?) OR (status = ?)', "searching", "before_listing").update_all(
           status: 'reject'
         )
+
+        buf = SearchCondition.where(user: user)
+        if buf.count >= 1000 then
+          buf.first.delete_all
+        end
         ProductSearchJob.perform_later(user, condition, shop_id)
       end
       redirect_to products_show_path
@@ -78,6 +83,18 @@ class ProductsController < ApplicationController
       ).page(params[:page]).per(30)
 
     end
+  end
+
+  def filter
+    if request.post? then
+      filter = params[:filter_condition]
+      user = current_user.email
+      temp = Account.find_by(user: user)
+      temp.update(
+        filter_condition: filter
+      )
+    end
+    redirect_back(fallback_location: root_path)
   end
 
 
@@ -176,9 +193,16 @@ class ProductsController < ApplicationController
     @account = Account.find_or_create_by(user: user)
     @shop_id = @account.selected_shop_id
     search_id = params[:search_id]
-    logger.debug(search_id)
-    @lists = List.where(user: user, search_id: search_id.to_s).page(params[:page]).per(100)
+    @filter_condition = @account.filter_condition
+    if @filter_condition == nil then
+      @filter_condition = "all"
+    end
 
+    if @filter_condition == "listing" then
+      @lists = List.where(user: user, search_id: search_id.to_s, status: @filter_condition).page(params[:page]).per(100)
+    else
+      @lists = List.where(user: user, search_id: search_id.to_s).page(params[:page]).per(100)
+    end
     @headers = Constants::HD
   end
 

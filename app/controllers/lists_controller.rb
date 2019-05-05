@@ -165,7 +165,7 @@ class ListsController < ApplicationController
     @login_user = current_user
     user = current_user.email
     @account = Account.find_or_create_by(user: user)
-    @lists = List.where(user: user, status: 'searching')
+    @lists = List.where(user: user, status: 'before_listing')
     @lists.update_all(
       status: 'listing'
     )
