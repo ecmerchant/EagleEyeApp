@@ -13,6 +13,7 @@ Rails.application.routes.draw do
   get 'lists/regist'
 
   get 'accounts/setup'
+  post 'accounts/regist'
 
   get 'products/check'
   get 'products/show'

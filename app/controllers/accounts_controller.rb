@@ -19,6 +19,7 @@ class AccountsController < ApplicationController
         return
       end
     end
+    redirect_to root_url
   end
 
 end
