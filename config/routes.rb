@@ -27,6 +27,7 @@ Rails.application.routes.draw do
   post 'products/update'
   post 'products/filter'
   get 'products/explain'
+  get 'products/delete'
 
   root to: 'products#show'
 

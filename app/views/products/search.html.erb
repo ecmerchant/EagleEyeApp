@@ -12,6 +12,7 @@
                 <% @headers.each do |key, value| %>
                 <th><%= value %></th>
                 <% end %>
+                <th>削除</th>
               </tr>
             </thead>
             <tbody>
@@ -27,12 +28,15 @@
                     <td class="align-middle"><%= search.shop.name %></td>
                   <% end %>
                 <% end %>
+                <td><%= link_to '削除', {:controller => "products", :action => "delete", :target => search.id} %></td>
               </tr>
               <% end %>
               <% end %>
             </tbody>
           </table>
         </div>
+        <br><br>
+        <%= link_to '全件削除', {:controller => "products", :action => "delete", :target => "all"}, class: "btn btn-danger" %>
       </div>
     </div>
   </div>

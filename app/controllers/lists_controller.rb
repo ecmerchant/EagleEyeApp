@@ -55,10 +55,19 @@ class ListsController < ApplicationController
         thash[ch.header] = ch.value
       end
 
+      sku_header = nil
+      if temp.shop_id == "1" then
+        sku_header = "r_"
+      elsif temp.shop_id == "2" then
+        sku_header = "y_"
+      end
+
+
+
       @headers[2].each do |col|
         case col
         when 'item_sku' then
-          thash['item_sku'] = temp.product_id
+          thash['item_sku'] = sku_header.to_s + temp.product_id
         when 'standard_price' then
           thash['standard_price'] = Price.calc(user, temp.product.price)
         when 'product-id' then
@@ -102,7 +111,7 @@ class ListsController < ApplicationController
       @headers2[0].each do |col|
         case col
         when 'code' then
-          yhash['code'] = temp.product_id
+          yhash['code'] = sku_header.to_s + temp.product_id
         when 'price' then
           yhash['price'] = Price.calc(user, temp.product.price)
         when 'product-id' then

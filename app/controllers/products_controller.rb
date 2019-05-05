@@ -97,6 +97,21 @@ class ProductsController < ApplicationController
     redirect_back(fallback_location: root_path)
   end
 
+  def delete
+    tag = params[:target]
+    user = current_user.email
+    if tag != nil then
+      if tag != 'all' then
+        temp = SearchCondition.find_by(id: tag)
+        if temp != nil then
+          temp.delete
+        end
+      else
+        SearchCondition.where(user: user).delete_all
+      end
+    end
+    redirect_back(fallback_location: root_path)
+  end
 
   def setup
     @login_user = current_user
