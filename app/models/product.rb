@@ -230,6 +230,15 @@ class Product < ApplicationRecord
           account.update(
             progress: "取得中 " + num.to_s + "件取得済み"
           )
+          account = Account.find_by(user: user)
+          if account.status == 'stop' then
+            logger.debug('====== STOP by USER ========= ')
+            account.update(
+              progress: "取得完了(ユーザ中断) 全" + num.to_s + "件取得"
+            )
+            return
+          end
+          
         end
         counter += 1
         if counter > 29 then
@@ -409,6 +418,16 @@ class Product < ApplicationRecord
               Product.import product_list, on_duplicate_key_update: {constraint_name: :for_upsert_products, columns: cols}
               List.import listing, on_duplicate_key_update: {constraint_name: :for_upsert_lists, columns: [:status, :condition, :search_id]}
               Category.import category_list, on_duplicate_key_update: {constraint_name: :for_upsert_categories, columns: [:name]}
+
+              account = Account.find_by(user: user)
+              if account.status == 'stop' then
+                logger.debug('====== STOP by USER ========= ')
+                account.update(
+                  progress: "取得完了(ユーザ中断) 全" + dnum.to_s + "件取得"
+                )
+                return
+              end
+
             end
           end
         end
@@ -429,7 +448,7 @@ class Product < ApplicationRecord
         if account.status == 'stop' then
           logger.debug('====== STOP by USER ========= ')
           account.update(
-            progress: "取得完了(ユーザ中断) 全" + num.to_s + "件取得"
+            progress: "取得完了(ユーザ中断) 全" + dnum.to_s + "件取得"
           )
           return
         end
