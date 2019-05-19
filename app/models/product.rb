@@ -57,8 +57,6 @@ class Product < ApplicationRecord
 
     if item_num > 0 then
       #検索結果からアイテム取り出し
-
-
       res = Hash.new
       counter = 0
       begin
@@ -69,7 +67,7 @@ class Product < ApplicationRecord
           logger.debug("-===============================-")
           next_result = results.next_page
         end
-        
+
         logger.debug("---")
         checker = Hash.new
         product_list = Array.new
@@ -206,6 +204,16 @@ class Product < ApplicationRecord
                 account.update(
                   progress: "取得中 " + num.to_s + "件取得済み"
                 )
+
+                account = Account.find_by(user: user)
+                if account.status == 'stop' then
+                  logger.debug('====== STOP by USER ========= ')
+                  account.update(
+                    progress: "取得完了(ユーザ中断) 全" + num.to_s + "件取得"
+                  )
+                  return
+                end
+
               end
               dcounter = 0
             end
@@ -416,6 +424,16 @@ class Product < ApplicationRecord
         Product.import product_list, on_duplicate_key_update: {constraint_name: :for_upsert_products, columns: cols}
         List.import listing, on_duplicate_key_update: {constraint_name: :for_upsert_lists, columns: [:status, :condition, :search_id]}
         Category.import category_list, on_duplicate_key_update: {constraint_name: :for_upsert_categories, columns: [:name]}
+
+        account = Account.find_by(user: user)
+        if account.status == 'stop' then
+          logger.debug('====== STOP by USER ========= ')
+          account.update(
+            progress: "取得完了(ユーザ中断) 全" + num.to_s + "件取得"
+          )
+          return
+        end
+
       end
       logger.debug("============ CHECK ================")
       logger.debug(url)

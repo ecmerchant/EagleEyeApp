@@ -4,6 +4,11 @@ class ProductsController < ApplicationController
     user = current_user.email
     @login_user = current_user
     @account = Account.find_or_create_by(user: user)
+    if @account.status == nil then
+      @account.update(
+        status: 'stop'
+      )
+    end
     @shop_id = @account.selected_shop_id
     @lists = List.where(user: user, shop_id: @shop_id, status: 'searching').page(params[:page]).per(3000)
     @headers = Constants::HD
@@ -18,52 +23,60 @@ class ProductsController < ApplicationController
   def search
     user = current_user.email
     if request.post? then
-      shop_id = params[:shop_id]
-      keyword = params[:keyword]
-      store_id = params[:store_id]
-      category_id = params[:category_id]
-      min_price = params[:min_price]
-      max_price = params[:max_price]
-      condition = {
-        keyword: keyword,
-        store_id: store_id,
-        category_id: category_id,
-        min_price: min_price,
-        max_price: max_price
-      }
-      @account = Account.find_or_create_by(user: user)
-
-      if keyword != nil || store_id != nil || category_id != nil then
+      if params[:commit] == "取得停止" then
+        @account = Account.find_or_create_by(user: user)
         @account.update(
-          selected_shop_id: shop_id,
-          search_start: Time.now,
-          last_keyword: keyword,
-          last_store_id: store_id,
-          last_category_id: category_id,
-          last_min_price: min_price,
-          last_max_price: max_price,
-          progress: "処理受付しました　進捗表示は画面を更新してください"
+          status: 'stop'
         )
-        temp = SearchCondition.create(
-          user: user,
-          shop_id: shop_id,
+      else
+        shop_id = params[:shop_id]
+        keyword = params[:keyword]
+        store_id = params[:store_id]
+        category_id = params[:category_id]
+        min_price = params[:min_price]
+        max_price = params[:max_price]
+        condition = {
           keyword: keyword,
           store_id: store_id,
           category_id: category_id,
           min_price: min_price,
-          max_price: max_price,
-        )
-        search_id = temp.id
-        condition[:search_id] = search_id
-        List.where(user: user).where('(status = ?) OR (status = ?)', "searching", "before_listing").update_all(
-          status: 'reject'
-        )
+          max_price: max_price
+        }
+        @account = Account.find_or_create_by(user: user)
 
-        buf = SearchCondition.where(user: user)
-        if buf.count >= 1000 then
-          buf.first.delete_all
+        if keyword != nil || store_id != nil || category_id != nil then
+          @account.update(
+            selected_shop_id: shop_id,
+            search_start: Time.now,
+            last_keyword: keyword,
+            last_store_id: store_id,
+            last_category_id: category_id,
+            last_min_price: min_price,
+            last_max_price: max_price,
+            progress: "処理受付しました　進捗表示は画面を更新してください",
+            status: 'continue'
+          )
+          temp = SearchCondition.create(
+            user: user,
+            shop_id: shop_id,
+            keyword: keyword,
+            store_id: store_id,
+            category_id: category_id,
+            min_price: min_price,
+            max_price: max_price,
+          )
+          search_id = temp.id
+          condition[:search_id] = search_id
+          List.where(user: user).where('(status = ?) OR (status = ?)', "searching", "before_listing").update_all(
+            status: 'reject'
+          )
+
+          buf = SearchCondition.where(user: user)
+          if buf.count >= 1000 then
+            buf.first.delete_all
+          end
+          ProductSearchJob.perform_later(user, condition, shop_id)
         end
-        ProductSearchJob.perform_later(user, condition, shop_id)
       end
       redirect_to products_show_path
     else
@@ -81,7 +94,7 @@ class ProductsController < ApplicationController
       @searches = SearchCondition.where(
         user: user
       ).page(params[:page]).per(30)
-
+      @total_num = SearchCondition.where(user: user).count
     end
   end
 

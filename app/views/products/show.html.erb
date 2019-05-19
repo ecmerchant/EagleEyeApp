@@ -27,7 +27,13 @@
               <label>最高価格
               <%= text_field_tag('max_price', @account.last_max_price, class: 'form-control', style: 'margin-left:10px; margin-right:20px; width:120px;') %>
               </label>
-              <%= submit_tag '取得開始', class: 'btn btn-info', style: 'margin-left:10px; margin-right:20px;' %>
+              <% if @account.status == 'stop' then %>
+                <%= submit_tag '取得開始', class: 'btn btn-info', style: 'margin-left:10px; margin-right:20px;'%>
+                <%= submit_tag '取得停止', class: 'btn btn-danger', style: 'margin-left:10px; margin-right:20px;', disabled: true %>
+              <% else %>
+                <%= submit_tag '取得開始', class: 'btn btn-info', style: 'margin-left:10px; margin-right:20px;', disabled: true  %>
+                <%= submit_tag '取得停止', class: 'btn btn-danger', style: 'margin-left:10px; margin-right:20px;'%>
+              <% end %>
             </div>
           <% end %>
         </div>

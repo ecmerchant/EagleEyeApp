@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_05_04_233209) do
+ActiveRecord::Schema.define(version: 2019_05_19_030655) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -31,6 +31,7 @@ ActiveRecord::Schema.define(version: 2019_05_04_233209) do
     t.integer "last_min_price"
     t.integer "last_max_price"
     t.string "filter_condition"
+    t.string "status"
   end
 
   create_table "categories", force: :cascade do |t|

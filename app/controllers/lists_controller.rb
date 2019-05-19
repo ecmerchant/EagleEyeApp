@@ -62,8 +62,6 @@ class ListsController < ApplicationController
         sku_header = "y_"
       end
 
-
-
       @headers[2].each do |col|
         case col
         when 'item_sku' then
@@ -193,6 +191,7 @@ class ListsController < ApplicationController
     @shop_id = @account.selected_shop_id
     @lists = List.where(user: user, shop_id: @shop_id, status: "listing").page(params[:page]).per(100)
     @headers = Constants::HD
+    @total_num = List.where(user: user, shop_id: @shop_id, status: "listing").count
 
     respond_to do |format|
       format.html
